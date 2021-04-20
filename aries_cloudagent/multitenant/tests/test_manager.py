@@ -86,8 +86,17 @@ class TestMultitenantManager(AsyncTestCase):
         assert "subwallet-webhook-url" in webhook_urls
 
     async def test_get_wallet_profile_returns_from_cache(self):
-        wallet_record = WalletRecord(wallet_id="test")
-        self.manager._instances["test"] = InMemoryProfile.test_profile()
+        wallet_record = WalletRecord(
+            wallet_id="test",
+            settings={
+                "default_label": "new_label",
+            },
+        )
+        self.manager._instances["test"] = InMemoryProfile.test_profile(
+            settings={
+                "default_label": "test_label",
+            },
+        )
 
         with async_mock.patch(
             "aries_cloudagent.config.wallet.wallet_config"
@@ -97,6 +106,7 @@ class TestMultitenantManager(AsyncTestCase):
             )
             assert profile is self.manager._instances["test"]
             wallet_config.assert_not_called()
+            assert profile.settings.get("default_label") == "new_label"
 
     async def test_get_wallet_profile_not_in_cache(self):
         wallet_record = WalletRecord(wallet_id="test", settings={})
