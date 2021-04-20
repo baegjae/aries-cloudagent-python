@@ -171,6 +171,17 @@ class MultitenantManager:
             # MTODO: add ledger config
             profile, _ = await wallet_config(context, provision=provision)
             self._instances[wallet_id] = profile
+        else:
+            # Update the settings of profile with wallet_record
+            profile = self._instances[wallet_id]
+            profile.settings.update(wallet_record.settings)
+
+            extra_settings = {
+                "admin.webhook_urls": self.get_webhook_urls(
+                    self._profile.context, wallet_record
+                ),
+            }
+            profile.settings.update(extra_settings)
 
         return self._instances[wallet_id]
 
